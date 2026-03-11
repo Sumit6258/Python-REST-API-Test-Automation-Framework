@@ -1,0 +1,10 @@
+pytest==7.4.3
+pytest-html==4.1.1
+pytest-xdist==3.3.1
+pytest-ordering==0.6
+requests==2.31.0
+behave==1.2.6
+jsonschema==4.20.0
+PyJWT==2.8.0
+python-dotenv==1.0.0
+colorlog==6.7.0

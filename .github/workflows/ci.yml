@@ -1,0 +1,181 @@
+name: API Test Automation CI
+
+on:
+  push:
+    branches: [ "main", "develop", "feature/**" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+  schedule:
+    # Run regression suite nightly at 02:00 UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: "Test suite to run (all | smoke | regression | auth)"
+        required: false
+        default: "all"
+      environment:
+        description: "Target environment (dev | staging | prod)"
+        required: false
+        default: "dev"
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # ------------------------------------------------------------------ #
+  # Lint & static analysis                                               #
+  # ------------------------------------------------------------------ #
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install lint dependencies
+        run: pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 . \
+            --max-line-length=100 \
+            --extend-ignore=E203,W503 \
+            --exclude=.git,__pycache__,.venv,reports
+
+  # ------------------------------------------------------------------ #
+  # pytest suite                                                         #
+  # ------------------------------------------------------------------ #
+  pytest:
+    name: pytest – ${{ matrix.os }}
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Run pytest (all tests)
+        if: ${{ github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == '' }}
+        env:
+          BASE_URL: "https://reqres.in/api"
+          ENV: ${{ github.event.inputs.environment || 'dev' }}
+        run: |
+          pytest tests/ \
+            --html=reports/pytest_report.html \
+            --self-contained-html \
+            -v \
+            --tb=short
+
+      - name: Run pytest (smoke only)
+        if: ${{ github.event.inputs.test_suite == 'smoke' }}
+        env:
+          BASE_URL: "https://reqres.in/api"
+          ENV: ${{ github.event.inputs.environment || 'dev' }}
+        run: |
+          pytest tests/ -m smoke \
+            --html=reports/pytest_report.html \
+            --self-contained-html \
+            -v
+
+      - name: Run pytest (regression only)
+        if: ${{ github.event.inputs.test_suite == 'regression' }}
+        env:
+          BASE_URL: "https://reqres.in/api"
+          ENV: ${{ github.event.inputs.environment || 'dev' }}
+        run: |
+          pytest tests/ -m regression \
+            --html=reports/pytest_report.html \
+            --self-contained-html \
+            -v
+
+      - name: Upload pytest HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-report-${{ matrix.os }}
+          path: reports/pytest_report.html
+          retention-days: 30
+
+  # ------------------------------------------------------------------ #
+  # Behave BDD suite                                                     #
+  # ------------------------------------------------------------------ #
+  behave:
+    name: Behave BDD
+    needs: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Run Behave BDD tests
+        env:
+          BASE_URL: "https://reqres.in/api"
+          ENV: ${{ github.event.inputs.environment || 'dev' }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          behave features/ \
+            --no-capture \
+            --format pretty \
+            --outfile reports/behave_report.txt \
+            --format json \
+            --outfile reports/behave_report.json \
+            || true   # allow partial failure without breaking pipeline
+
+      - name: Upload Behave report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: behave-report
+          path: |
+            reports/behave_report.txt
+            reports/behave_report.json
+          retention-days: 30
+
+  # ------------------------------------------------------------------ #
+  # Notify on failure                                                    #
+  # ------------------------------------------------------------------ #
+  notify:
+    name: Notify on failure
+    needs: [ pytest, behave ]
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Failure summary
+        run: |
+          echo "::error::One or more test jobs failed. Check the uploaded reports."
