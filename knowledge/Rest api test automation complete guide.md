@@ -2115,3 +2115,19 @@ ENV=staging python -m pytest        # Test against staging environment
 
 *Guide Version: 1.0 | Framework: Python + pytest + DummyJSON*
 *Total Tests: 76 | Target API: https://dummyjson.com*
+
+
+---
+
+<p align="center">
+Created with <span style="display:inline-block;animation:beat 1s infinite;">❤️</span> by 
+<a href="https://www.linkedin.com/in/thesumitsuman/" target="_blank"><b>Sumit</b></a> • 
+Knowledge shared for the <i>REST API Test Automation — Complete Guide</i>
+</p>
+
+<style>
+@keyframes beat {
+  0%,100% {transform: scale(1);}
+  50% {transform: scale(1.25);}
+}
+</style>
