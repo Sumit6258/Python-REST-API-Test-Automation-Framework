@@ -2120,14 +2120,5 @@ ENV=staging python -m pytest        # Test against staging environment
 ---
 
 <p align="center">
-Created with <span style="display:inline-block;animation:beat 1s infinite;">❤️</span> by 
-<a href="https://www.linkedin.com/in/thesumitsuman/" target="_blank"><b>Sumit</b></a> • 
-Knowledge shared for the <i>REST API Test Automation — Complete Guide</i>
+Created with ❤️ by <a href="https://www.linkedin.com/in/thesumitsuman/">Sumit</a> • Knowledge shared for the <i>REST API Test Automation - Complete Guide</i>
 </p>
-
-<style>
-@keyframes beat {
-  0%,100% {transform: scale(1);}
-  50% {transform: scale(1.25);}
-}
-</style>
