@@ -82,34 +82,21 @@ jobs:
         env:
           BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
-        run: |
-          pytest tests/ \
-            --html=reports/pytest_report.html \
-            --self-contained-html \
-            -v \
-            --tb=short
+        run: pytest tests/ --html=reports/pytest_report.html --self-contained-html -v --tb=short
 
       - name: Run pytest (smoke only)
         if: ${{ github.event.inputs.test_suite == 'smoke' }}
         env:
           BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
-        run: |
-          pytest tests/ -m smoke \
-            --html=reports/pytest_report.html \
-            --self-contained-html \
-            -v
+        run: pytest tests/ -m smoke --html=reports/pytest_report.html --self-contained-html -v
 
       - name: Run pytest (regression only)
         if: ${{ github.event.inputs.test_suite == 'regression' }}
         env:
           BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
-        run: |
-          pytest tests/ -m regression \
-            --html=reports/pytest_report.html \
-            --self-contained-html \
-            -v
+        run: pytest tests/ -m regression --html=reports/pytest_report.html --self-contained-html -v
 
       - name: Upload pytest HTML report
         uses: actions/upload-artifact@v4
