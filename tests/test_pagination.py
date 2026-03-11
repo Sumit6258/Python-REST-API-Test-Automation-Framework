@@ -72,8 +72,10 @@ class TestPaginationData:
         assert len(response.json().get("users", [])) > 0
 
     def test_page_1_and_page_2_have_distinct_users(self, client: APIClient) -> None:
-        ids_p1 = {u["id"] for u in client.get("/users", params={"limit": 10, "skip": 0}).json()["users"]}
-        ids_p2 = {u["id"] for u in client.get("/users", params={"limit": 10, "skip": 10}).json()["users"]}
+        users_p1 = client.get("/users", params={"limit": 10, "skip": 0}).json()["users"]
+        ids_p1 = {u["id"] for u in users_p1}
+        users_p2 = client.get("/users", params={"limit": 10, "skip": 10}).json()["users"]
+        ids_p2 = {u["id"] for u in users_p2}
         overlap = ids_p1 & ids_p2
         assert not overlap, f"Duplicate user IDs found across pages: {overlap}"
 
