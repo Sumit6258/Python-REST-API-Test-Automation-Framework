@@ -75,7 +75,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Create reports directory
-        run: mkdir -p reports
+        run: python -c "import os; os.makedirs('reports', exist_ok=True)"
 
       - name: Run pytest (all tests)
         if: ${{ github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == '' }}
@@ -141,7 +141,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Create reports directory
-        run: mkdir -p reports
+        run: python -c "import os; os.makedirs('reports', exist_ok=True)"
 
       - name: Run Behave BDD tests
         env:
