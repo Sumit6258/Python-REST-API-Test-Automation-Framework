@@ -80,7 +80,7 @@ jobs:
       - name: Run pytest (all tests)
         if: ${{ github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == '' }}
         env:
-          BASE_URL: "https://reqres.in/api"
+          BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
         run: |
           pytest tests/ \
@@ -92,7 +92,7 @@ jobs:
       - name: Run pytest (smoke only)
         if: ${{ github.event.inputs.test_suite == 'smoke' }}
         env:
-          BASE_URL: "https://reqres.in/api"
+          BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
         run: |
           pytest tests/ -m smoke \
@@ -103,7 +103,7 @@ jobs:
       - name: Run pytest (regression only)
         if: ${{ github.event.inputs.test_suite == 'regression' }}
         env:
-          BASE_URL: "https://reqres.in/api"
+          BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
         run: |
           pytest tests/ -m regression \
@@ -145,7 +145,7 @@ jobs:
 
       - name: Run Behave BDD tests
         env:
-          BASE_URL: "https://reqres.in/api"
+          BASE_URL: "https://dummyjson.com"
           ENV: ${{ github.event.inputs.environment || 'dev' }}
           PYTHONPATH: ${{ github.workspace }}
         run: |
